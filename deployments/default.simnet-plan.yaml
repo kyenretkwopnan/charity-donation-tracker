@@ -62,6 +62,6 @@ plan:
         - emulated-contract-publish:
             contract-name: charity-donation-tracker
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: "contracts\\charity-donation-tracker.clar"
+            path: contracts/charity-donation-tracker.clar
             clarity-version: 1
-      epoch: "2.05"
+      epoch: "2.1"
