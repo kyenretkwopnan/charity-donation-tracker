@@ -1,0 +1,18 @@
+[network]
+name = "simnet"
+
+[accounts.deployer]
+mnemonic = "twice kind fence tip hidden tilt action fragile skin nothing glory cousin"
+balance = 100_000_000_000_000
+
+[accounts.wallet_1]
+mnemonic = "sell invite acquire kitten bamboo drastic junk rural squeeze column kind onion"
+balance = 100_000_000_000_000
+
+[accounts.wallet_2]
+mnemonic = "hold excess usual excess ring elephant install account glad dry fragile donkey"
+balance = 100_000_000_000_000
+
+[accounts.wallet_3]
+mnemonic = "board list obtain sugar hour worth raven scout denial thunder horse logic"
+balance = 100_000_000_000_000

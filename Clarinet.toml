@@ -1,0 +1,23 @@
+[project]
+name = "charity-donation-tracker"
+description = "A smart contract system for tracking charity donations and donor rewards"
+authors = ["ogunleyenadia@gmail.com"]
+telemetry = false
+
+[contracts.charity-donation-tracker]
+path = "contracts/charity-donation-tracker.clar"
+clarity_version = 3
+epoch = 3.0
+
+[repl]
+costs_version = 3
+parser_version = 2
+
+[repl.analysis]
+passes = ["check_checker"]
+
+[repl.analysis.check_checker]
+strict = false
+trusted_sender = false
+trusted_caller = false
+callee_filter = false

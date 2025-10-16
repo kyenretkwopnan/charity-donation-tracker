@@ -1,0 +1,24 @@
+[network]
+name = "devnet"
+stacks_node_rpc_address = "127.0.0.1:20443"
+stacks_api_port = 3999
+stacks_api_url = "http://127.0.0.1:3999"
+bitcoin_explorer_url = "https://devnet.ltgbitcoinexplorer.com"
+stacks_explorer_url = "https://explorer.stacks.co/?chain=testnet"
+bitcoin_node_rpc_host = "127.0.0.1"
+bitcoin_node_rpc_port = 18443
+bitcoin_node_p2p_host = "127.0.0.1"
+bitcoin_node_p2p_port = 18444
+
+[accounts.deployer]
+mnemonic = "twice kind fence tip hidden tilt action fragile skin nothing glory cousin"
+
+[accounts.wallet_1]
+mnemonic = "sell invite acquire kitten bamboo drastic junk rural squeeze column kind onion"
+
+[accounts.wallet_2]
+mnemonic = "hold excess usual excess ring elephant install account glad dry fragile donkey"
+
+[devnet]
+orchestrator_ingestion_port = 20456
+bitcoin_controller_block_time = 10_000

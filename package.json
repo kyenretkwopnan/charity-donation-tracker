@@ -1,0 +1,21 @@
+{
+  "name": "charity-donation-tracker",
+  "version": "1.0.0",
+  "description": "A smart contract system for tracking charity donations and donor rewards",
+  "main": "index.js",
+  "scripts": {
+    "test": "clarinet test",
+    "check": "clarinet check"
+  },
+  "keywords": [
+    "clarity",
+    "stacks",
+    "charity",
+    "donations",
+    "blockchain"
+  ],
+  "author": "ogunleyenadia@gmail.com",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {}
+}
