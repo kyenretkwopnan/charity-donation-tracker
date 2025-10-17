@@ -159,6 +159,9 @@
         (var-set total-donated (+ (var-get total-donated) amount))
         (var-set reward-pool (+ (var-get reward-pool) reward-amount))
         
+        ;; Check for milestone achievements
+        (try! (check-donor-milestones tx-sender))
+        
         (ok donation-id)
     )
 )
@@ -243,5 +246,273 @@
                 u100  ;; 1x multiplier (bronze and none)
             )
         )
+    )
+)
+
+;; === DONOR MILESTONE REWARDS SYSTEM ===
+;; Independent feature for tracking donor achievements and special milestones
+
+;; Milestone Constants
+(define-constant ERR_MILESTONE_NOT_FOUND (err u408))
+(define-constant ERR_MILESTONE_ALREADY_CLAIMED (err u409))
+(define-constant ERR_MILESTONE_NOT_ACHIEVED (err u410))
+(define-constant ERR_INVALID_MILESTONE_TYPE (err u411))
+
+;; Milestone Types
+(define-constant MILESTONE_FIRST_DONATION "FIRST_DONATION")
+(define-constant MILESTONE_CONSECUTIVE_MONTHS "CONSECUTIVE_MONTHS")
+(define-constant MILESTONE_TOTAL_AMOUNT "TOTAL_AMOUNT")
+(define-constant MILESTONE_CHARITY_SUPPORTER "CHARITY_SUPPORTER")
+(define-constant MILESTONE_COMMUNITY_BUILDER "COMMUNITY_BUILDER")
+
+;; Milestone Data Variables
+(define-data-var next-milestone-id uint u1)
+(define-data-var total-milestones-achieved uint u0)
+
+;; Milestone Definitions Map
+(define-map milestone-definitions
+    { milestone-id: uint }
+    {
+        title: (string-ascii 64),
+        description: (string-ascii 256),
+        milestone-type: (string-ascii 32),
+        requirement-value: uint,
+        reward-points: uint,
+        is-active: bool,
+        created-at: uint
+    }
+)
+
+;; Donor Milestone Achievements Map
+(define-map donor-milestones
+    { donor: principal, milestone-id: uint }
+    {
+        achieved-at: uint,
+        claimed-at: uint,
+        reward-claimed: bool,
+        achievement-value: uint
+    }
+)
+
+;; Donor Milestone Progress Map
+(define-map donor-milestone-progress
+    { donor: principal }
+    {
+        total-milestones-achieved: uint,
+        total-milestone-points: uint,
+        consecutive-donation-months: uint,
+        last-donation-month: uint,
+        supported-charities-count: uint,
+        community-referrals: uint
+    }
+)
+
+;; Public Functions for Milestone System
+
+;; Create a new milestone (owner only)
+(define-public (create-milestone 
+    (title (string-ascii 64)) 
+    (description (string-ascii 256))
+    (milestone-type (string-ascii 32))
+    (requirement-value uint)
+    (reward-points uint)
+)
+    (let ((milestone-id (var-get next-milestone-id)))
+        (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_NOT_AUTHORIZED)
+        (asserts! (> (len title) u0) ERR_INVALID_AMOUNT)
+        (asserts! (> reward-points u0) ERR_INVALID_AMOUNT)
+        (asserts! (is-valid-milestone-type milestone-type) ERR_INVALID_MILESTONE_TYPE)
+        
+        (map-set milestone-definitions
+            { milestone-id: milestone-id }
+            {
+                title: title,
+                description: description,
+                milestone-type: milestone-type,
+                requirement-value: requirement-value,
+                reward-points: reward-points,
+                is-active: true,
+                created-at: block-height
+            }
+        )
+        
+        (var-set next-milestone-id (+ milestone-id u1))
+        (ok milestone-id)
+    )
+)
+
+;; Check and award milestones for a donor
+(define-public (check-donor-milestones (donor principal))
+    (let (
+        (donor-profile (unwrap! (map-get? donor-profiles { donor: donor }) ERR_DONOR_NOT_FOUND))
+        (milestone-progress (default-to 
+            { total-milestones-achieved: u0, total-milestone-points: u0, consecutive-donation-months: u0, 
+              last-donation-month: u0, supported-charities-count: u0, community-referrals: u0 }
+            (map-get? donor-milestone-progress { donor: donor })
+        ))
+    )
+        ;; Check for first donation milestone
+        (unwrap-panic (check-first-donation-milestone donor donor-profile))
+        
+        ;; Check for total amount milestones
+        (unwrap-panic (check-total-amount-milestones donor (get total-donated donor-profile)))
+        
+        ;; Update milestone progress
+        (map-set donor-milestone-progress
+            { donor: donor }
+            milestone-progress
+        )
+        
+        (ok true)
+    )
+)
+
+;; Claim milestone reward
+(define-public (claim-milestone-reward (milestone-id uint))
+    (let (
+        (milestone-def (unwrap! (map-get? milestone-definitions { milestone-id: milestone-id }) ERR_MILESTONE_NOT_FOUND))
+        (achievement (unwrap! (map-get? donor-milestones { donor: tx-sender, milestone-id: milestone-id }) ERR_MILESTONE_NOT_ACHIEVED))
+        (current-donor-profile (unwrap! (map-get? donor-profiles { donor: tx-sender }) ERR_DONOR_NOT_FOUND))
+    )
+        (asserts! (get is-active milestone-def) ERR_MILESTONE_NOT_FOUND)
+        (asserts! (not (get reward-claimed achievement)) ERR_MILESTONE_ALREADY_CLAIMED)
+        
+        ;; Mark as claimed
+        (map-set donor-milestones
+            { donor: tx-sender, milestone-id: milestone-id }
+            (merge achievement { claimed-at: block-height, reward-claimed: true })
+        )
+        
+        ;; Add reward points to donor profile
+        (map-set donor-profiles
+            { donor: tx-sender }
+            (merge current-donor-profile { 
+                rewards-earned: (+ (get rewards-earned current-donor-profile) (get reward-points milestone-def))
+            })
+        )
+        
+        ;; Update reward pool
+        (var-set reward-pool (+ (var-get reward-pool) (get reward-points milestone-def)))
+        
+        (ok (get reward-points milestone-def))
+    )
+)
+
+;; Read-only functions for Milestone System
+
+;; Get milestone definition
+(define-read-only (get-milestone-definition (milestone-id uint))
+    (map-get? milestone-definitions { milestone-id: milestone-id })
+)
+
+;; Get donor milestone achievement
+(define-read-only (get-donor-milestone (donor principal) (milestone-id uint))
+    (map-get? donor-milestones { donor: donor, milestone-id: milestone-id })
+)
+
+;; Get donor milestone progress
+(define-read-only (get-donor-milestone-progress (donor principal))
+    (map-get? donor-milestone-progress { donor: donor })
+)
+
+;; Get all achieved milestones for a donor
+(define-read-only (get-donor-achieved-milestones (donor principal))
+    (let ((progress (default-to 
+            { total-milestones-achieved: u0, total-milestone-points: u0, consecutive-donation-months: u0, 
+              last-donation-month: u0, supported-charities-count: u0, community-referrals: u0 }
+            (map-get? donor-milestone-progress { donor: donor })
+        )))
+        progress
+    )
+)
+
+;; Get milestone statistics
+(define-read-only (get-milestone-stats)
+    {
+        total-milestones: (- (var-get next-milestone-id) u1),
+        total-achievements: (var-get total-milestones-achieved)
+    }
+)
+
+;; Private functions for Milestone System
+
+;; Validate milestone type
+(define-private (is-valid-milestone-type (milestone-type (string-ascii 32)))
+    (or 
+        (is-eq milestone-type MILESTONE_FIRST_DONATION)
+        (or
+            (is-eq milestone-type MILESTONE_CONSECUTIVE_MONTHS)
+            (or
+                (is-eq milestone-type MILESTONE_TOTAL_AMOUNT)
+                (or
+                    (is-eq milestone-type MILESTONE_CHARITY_SUPPORTER)
+                    (is-eq milestone-type MILESTONE_COMMUNITY_BUILDER)
+                )
+            )
+        )
+    )
+)
+
+;; Check first donation milestone
+(define-private (check-first-donation-milestone (donor principal) (donor-profile (tuple (total-donated uint) (donation-count uint) (tier (string-ascii 16)) (rewards-earned uint) (first-donation uint) (last-donation uint))))
+    (if (and 
+            (> (get donation-count donor-profile) u0)
+            (is-none (map-get? donor-milestones { donor: donor, milestone-id: u1 }))
+        )
+        (begin
+            (map-set donor-milestones
+                { donor: donor, milestone-id: u1 }
+                {
+                    achieved-at: (get first-donation donor-profile),
+                    claimed-at: u0,
+                    reward-claimed: false,
+                    achievement-value: u1
+                }
+            )
+            (var-set total-milestones-achieved (+ (var-get total-milestones-achieved) u1))
+            (ok true)
+        )
+        (ok true)
+    )
+)
+
+;; Check total amount milestones
+(define-private (check-total-amount-milestones (donor principal) (total-amount uint))
+    (begin
+        ;; Check 10 STX milestone (milestone-id: u2)
+        (if (and (>= total-amount u10000000) (is-none (map-get? donor-milestones { donor: donor, milestone-id: u2 })))
+            (begin
+                (map-set donor-milestones
+                    { donor: donor, milestone-id: u2 }
+                    {
+                        achieved-at: block-height,
+                        claimed-at: u0,
+                        reward-claimed: false,
+                        achievement-value: total-amount
+                    }
+                )
+                (var-set total-milestones-achieved (+ (var-get total-milestones-achieved) u1))
+            )
+            false
+        )
+        
+        ;; Check 100 STX milestone (milestone-id: u3)
+        (if (and (>= total-amount u100000000) (is-none (map-get? donor-milestones { donor: donor, milestone-id: u3 })))
+            (begin
+                (map-set donor-milestones
+                    { donor: donor, milestone-id: u3 }
+                    {
+                        achieved-at: block-height,
+                        claimed-at: u0,
+                        reward-claimed: false,
+                        achievement-value: total-amount
+                    }
+                )
+                (var-set total-milestones-achieved (+ (var-get total-milestones-achieved) u1))
+            )
+            false
+        )
+        
+        (ok true)
     )
 )

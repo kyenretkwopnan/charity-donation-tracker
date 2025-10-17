@@ -1,0 +1,389 @@
+[
+  {
+    "test_name": "tests/charity-donation-tracker.test.ts__Charity Donation Tracker Contract__allows contract owner to register charities",
+    "contract_id": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.charity-donation-tracker",
+    "method": "register-charity",
+    "args": [
+      "\"Red Cross\"",
+      "\"International humanitarian organization\"",
+      "ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5"
+    ],
+    "cost_result": {
+      "total": {
+        "write_length": 233,
+        "write_count": 2,
+        "read_length": 7937,
+        "read_count": 7,
+        "runtime": 20352
+      },
+      "limit": {
+        "write_length": 15000000,
+        "write_count": 15000,
+        "read_length": 100000000,
+        "read_count": 15000,
+        "runtime": 5000000000
+      },
+      "memory": 231,
+      "memory_limit": 100000000
+    }
+  },
+  {
+    "test_name": "tests/charity-donation-tracker.test.ts__Charity Donation Tracker Contract__allows users to make donations to registered charities",
+    "contract_id": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.charity-donation-tracker",
+    "method": "register-charity",
+    "args": [
+      "\"UNICEF\"",
+      "\"Children\\'s fund\"",
+      "ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+    ],
+    "cost_result": {
+      "total": {
+        "write_length": 206,
+        "write_count": 2,
+        "read_length": 7937,
+        "read_count": 7,
+        "runtime": 20184
+      },
+      "limit": {
+        "write_length": 15000000,
+        "write_count": 15000,
+        "read_length": 100000000,
+        "read_count": 15000,
+        "runtime": 5000000000
+      },
+      "memory": 204,
+      "memory_limit": 100000000
+    }
+  },
+  {
+    "test_name": "tests/charity-donation-tracker.test.ts__Charity Donation Tracker Contract__allows users to make donations to registered charities",
+    "contract_id": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.charity-donation-tracker",
+    "method": "donate",
+    "args": [
+      "u1",
+      "u5000000",
+      "\"Great cause!\"",
+      "false"
+    ],
+    "cost_result": {
+      "total": {
+        "write_length": 775,
+        "write_count": 8,
+        "read_length": 8262,
+        "read_count": 20,
+        "runtime": 89992
+      },
+      "limit": {
+        "write_length": 15000000,
+        "write_count": 15000,
+        "read_length": 100000000,
+        "read_count": 15000,
+        "runtime": 5000000000
+      },
+      "memory": 1143,
+      "memory_limit": 100000000
+    }
+  },
+  {
+    "test_name": "tests/charity-donation-tracker.test.ts__Charity Donation Tracker Contract__creates and updates donor profiles correctly",
+    "contract_id": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.charity-donation-tracker",
+    "method": "register-charity",
+    "args": [
+      "\"Save the Children\"",
+      "\"Child welfare organization\"",
+      "ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+    ],
+    "cost_result": {
+      "total": {
+        "write_length": 228,
+        "write_count": 2,
+        "read_length": 7937,
+        "read_count": 7,
+        "runtime": 20338
+      },
+      "limit": {
+        "write_length": 15000000,
+        "write_count": 15000,
+        "read_length": 100000000,
+        "read_count": 15000,
+        "runtime": 5000000000
+      },
+      "memory": 226,
+      "memory_limit": 100000000
+    }
+  },
+  {
+    "test_name": "tests/charity-donation-tracker.test.ts__Charity Donation Tracker Contract__creates and updates donor profiles correctly",
+    "contract_id": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.charity-donation-tracker",
+    "method": "donate",
+    "args": [
+      "u1",
+      "u2000000",
+      "\"For the children\"",
+      "false"
+    ],
+    "cost_result": {
+      "total": {
+        "write_length": 801,
+        "write_count": 8,
+        "read_length": 8284,
+        "read_count": 20,
+        "runtime": 90214
+      },
+      "limit": {
+        "write_length": 15000000,
+        "write_count": 15000,
+        "read_length": 100000000,
+        "read_count": 15000,
+        "runtime": 5000000000
+      },
+      "memory": 1169,
+      "memory_limit": 100000000
+    }
+  },
+  {
+    "test_name": "tests/charity-donation-tracker.test.ts__Charity Donation Tracker Contract__creates and updates donor profiles correctly",
+    "contract_id": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.charity-donation-tracker",
+    "method": "get-donor-profile",
+    "args": [
+      "ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5"
+    ],
+    "cost_result": {
+      "total": {
+        "write_length": 0,
+        "write_count": 0,
+        "read_length": 8131,
+        "read_count": 4,
+        "runtime": 11772
+      },
+      "limit": {
+        "write_length": 15000000,
+        "write_count": 15000,
+        "read_length": 100000000,
+        "read_count": 15000,
+        "runtime": 5000000000
+      },
+      "memory": 0,
+      "memory_limit": 100000000
+    }
+  },
+  {
+    "test_name": "tests/charity-donation-tracker.test.ts__Charity Donation Tracker Contract__tracks global statistics correctly",
+    "contract_id": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.charity-donation-tracker",
+    "method": "register-charity",
+    "args": [
+      "\"Doctors Without Borders\"",
+      "\"Medical humanitarian organization\"",
+      "ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
+    ],
+    "cost_result": {
+      "total": {
+        "write_length": 241,
+        "write_count": 2,
+        "read_length": 7937,
+        "read_count": 7,
+        "runtime": 20428
+      },
+      "limit": {
+        "write_length": 15000000,
+        "write_count": 15000,
+        "read_length": 100000000,
+        "read_count": 15000,
+        "runtime": 5000000000
+      },
+      "memory": 239,
+      "memory_limit": 100000000
+    }
+  },
+  {
+    "test_name": "tests/charity-donation-tracker.test.ts__Charity Donation Tracker Contract__tracks global statistics correctly",
+    "contract_id": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.charity-donation-tracker",
+    "method": "donate",
+    "args": [
+      "u1",
+      "u1000000",
+      "\"Great work!\"",
+      "false"
+    ],
+    "cost_result": {
+      "total": {
+        "write_length": 809,
+        "write_count": 8,
+        "read_length": 8297,
+        "read_count": 20,
+        "runtime": 90301
+      },
+      "limit": {
+        "write_length": 15000000,
+        "write_count": 15000,
+        "read_length": 100000000,
+        "read_count": 15000,
+        "runtime": 5000000000
+      },
+      "memory": 1177,
+      "memory_limit": 100000000
+    }
+  },
+  {
+    "test_name": "tests/charity-donation-tracker.test.ts__Charity Donation Tracker Contract__tracks global statistics correctly",
+    "contract_id": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.charity-donation-tracker",
+    "method": "donate",
+    "args": [
+      "u1",
+      "u3000000",
+      "\"Keep it up!\"",
+      "true"
+    ],
+    "cost_result": {
+      "total": {
+        "write_length": 809,
+        "write_count": 8,
+        "read_length": 8297,
+        "read_count": 20,
+        "runtime": 90301
+      },
+      "limit": {
+        "write_length": 15000000,
+        "write_count": 15000,
+        "read_length": 100000000,
+        "read_count": 15000,
+        "runtime": 5000000000
+      },
+      "memory": 1177,
+      "memory_limit": 100000000
+    }
+  },
+  {
+    "test_name": "tests/charity-donation-tracker.test.ts__Charity Donation Tracker Contract__tracks global statistics correctly",
+    "contract_id": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.charity-donation-tracker",
+    "method": "get-global-stats",
+    "args": [],
+    "cost_result": {
+      "total": {
+        "write_length": 0,
+        "write_count": 0,
+        "read_length": 7989,
+        "read_count": 7,
+        "runtime": 12303
+      },
+      "limit": {
+        "write_length": 15000000,
+        "write_count": 15000,
+        "read_length": 100000000,
+        "read_count": 15000,
+        "runtime": 5000000000
+      },
+      "memory": 0,
+      "memory_limit": 100000000
+    }
+  },
+  {
+    "test_name": "tests/charity-donation-tracker.test.ts__Charity Donation Tracker Contract__prevents donations to non-existent charities",
+    "contract_id": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.charity-donation-tracker",
+    "method": "donate",
+    "args": [
+      "u999",
+      "u1000000",
+      "\"Test donation\"",
+      "false"
+    ],
+    "cost_result": {
+      "total": {
+        "write_length": 0,
+        "write_count": 0,
+        "read_length": 7969,
+        "read_count": 5,
+        "runtime": 13297
+      },
+      "limit": {
+        "write_length": 15000000,
+        "write_count": 15000,
+        "read_length": 100000000,
+        "read_count": 15000,
+        "runtime": 5000000000
+      },
+      "memory": 0,
+      "memory_limit": 100000000
+    }
+  },
+  {
+    "test_name": "tests/charity-donation-tracker.test.ts__Charity Donation Tracker Contract__restricts charity deactivation to owner only",
+    "contract_id": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.charity-donation-tracker",
+    "method": "register-charity",
+    "args": [
+      "\"Test Charity\"",
+      "\"Test description\"",
+      "ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+    ],
+    "cost_result": {
+      "total": {
+        "write_length": 213,
+        "write_count": 2,
+        "read_length": 7937,
+        "read_count": 7,
+        "runtime": 20238
+      },
+      "limit": {
+        "write_length": 15000000,
+        "write_count": 15000,
+        "read_length": 100000000,
+        "read_count": 15000,
+        "runtime": 5000000000
+      },
+      "memory": 211,
+      "memory_limit": 100000000
+    }
+  },
+  {
+    "test_name": "tests/charity-donation-tracker.test.ts__Charity Donation Tracker Contract__restricts charity deactivation to owner only",
+    "contract_id": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.charity-donation-tracker",
+    "method": "deactivate-charity",
+    "args": [
+      "u1"
+    ],
+    "cost_result": {
+      "total": {
+        "write_length": 0,
+        "write_count": 0,
+        "read_length": 8112,
+        "read_count": 4,
+        "runtime": 12819
+      },
+      "limit": {
+        "write_length": 15000000,
+        "write_count": 15000,
+        "read_length": 100000000,
+        "read_count": 15000,
+        "runtime": 5000000000
+      },
+      "memory": 0,
+      "memory_limit": 100000000
+    }
+  },
+  {
+    "test_name": "tests/charity-donation-tracker.test.ts__Charity Donation Tracker Contract__restricts charity deactivation to owner only",
+    "contract_id": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.charity-donation-tracker",
+    "method": "deactivate-charity",
+    "args": [
+      "u1"
+    ],
+    "cost_result": {
+      "total": {
+        "write_length": 195,
+        "write_count": 1,
+        "read_length": 8112,
+        "read_count": 5,
+        "runtime": 21948
+      },
+      "limit": {
+        "write_length": 15000000,
+        "write_count": 15000,
+        "read_length": 100000000,
+        "read_count": 15000,
+        "runtime": 5000000000
+      },
+      "memory": 194,
+      "memory_limit": 100000000
+    }
+  }
+]

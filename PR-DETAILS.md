@@ -1,33 +1,32 @@
-# Charity Donation Tracker Smart Contract
+# Donor Milestone Rewards System
 
 ## Overview
-This feature introduces a comprehensive charity donation tracking system built on Stacks blockchain using Clarity v3. The contract enables transparent donation management, donor profiling with tier-based rewards, and complete audit trails for all charitable contributions.
+A comprehensive milestone achievement system that automatically tracks and rewards donor milestones, enhancing engagement through gamification and recognition of charitable contributions.
 
 ## Technical Implementation
+Added independent milestone tracking system with the following key components:
 
-### Key Functions Added
-- **register-charity**: Owner-only function to register new charitable organizations
-- **donate**: Core donation function with automatic tier calculation and reward point allocation
-- **deactivate-charity**: Administrative function to disable charities
-- **get-charity-info**: Read-only function to retrieve charity details
-- **get-donor-profile**: Read-only function to access donor statistics and tier information
-- **get-global-stats**: Read-only function providing platform-wide donation metrics
+### New Data Structures
+- **milestone-definitions**: Stores configurable milestone types and rewards
+- **donor-milestones**: Tracks individual donor achievements
+- **donor-milestone-progress**: Monitors ongoing progress metrics
 
-### Data Structures
-- **charities map**: Stores charity information including name, description, wallet, and activity status
-- **donations map**: Complete donation records with donor, amount, message, and anonymity settings
-- **donor-profiles map**: Comprehensive donor statistics with tier progression and reward tracking
-- **charity-donors map**: Cross-reference mapping for charity-specific donor contributions
+### Key Functions
+- **create-milestone**: Owner-only function to define new milestone types
+- **check-donor-milestones**: Automated milestone validation on donations
+- **claim-milestone-reward**: Allow donors to claim earned milestone rewards
+- **milestone read-only functions**: Query milestone definitions and achievements
 
-### Tier System
-- **BRONZE**: 1+ STX total donations
-- **SILVER**: 10+ STX total donations  
-- **GOLD**: 50+ STX total donations
-- **PLATINUM**: 100+ STX total donations
+### Milestone Types Supported
+- First Donation Achievement
+- Total Amount Milestones (10 STX, 100 STX)
+- Consecutive Monthly Donations
+- Charity Supporter Recognition
+- Community Builder Awards
 
 ## Testing & Validation
-- ✅ Contract passes clarinet check (Clarity v3 compliant)
-- ✅ All npm tests successful
-- ✅ CI/CD pipeline configured with GitHub Actions
-- ✅ Proper error handling with comprehensive error constants
-- ✅ Independent feature with no cross-contract dependencies
+- ? Contract passes clarinet check with no errors
+- ? All npm tests successful (6/6 passed)  
+- ? CI/CD pipeline configured with GitHub Actions
+- ? Clarity v3 compliant with proper error handling
+- ? Independent feature with no cross-contract dependencies

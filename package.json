@@ -1,21 +1,24 @@
+
 {
-  "name": "charity-donation-tracker",
+  "name": "charity-donation-tracker-tests",
   "version": "1.0.0",
-  "description": "A smart contract system for tracking charity donations and donor rewards",
-  "main": "index.js",
+  "description": "Unit tests for charity donation tracker smart contract.",
+  "type": "module",
+  "private": true,
   "scripts": {
-    "test": "clarinet test",
-    "check": "clarinet check"
+    "test": "vitest run",
+    "test:report": "vitest run -- --coverage --costs",
+    "test:watch": "chokidar \"tests/**/*.ts\" \"contracts/**/*.clar\" -c \"npm run test:report\""
   },
-  "keywords": [
-    "clarity",
-    "stacks",
-    "charity",
-    "donations",
-    "blockchain"
-  ],
-  "author": "ogunleyenadia@gmail.com",
-  "license": "MIT",
-  "devDependencies": {},
-  "dependencies": {}
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@hirosystems/clarinet-sdk": "^2.14.0",
+    "@stacks/transactions": "^6.12.0",
+    "chokidar-cli": "^3.0.0",
+    "typescript": "^5.6.0",
+    "vite": "^6.1.0",
+    "vitest": "^3.0.0",
+    "vitest-environment-clarinet": "^2.3.0"
+  }
 }
