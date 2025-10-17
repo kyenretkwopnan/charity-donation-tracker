@@ -1,32 +1,41 @@
-# Donor Milestone Rewards System
+# Volunteer Registry System with Donor Milestone Rewards
 
 ## Overview
-A comprehensive milestone achievement system that automatically tracks and rewards donor milestones, enhancing engagement through gamification and recognition of charitable contributions.
+Enhanced charity donation tracker featuring both donor milestone rewards and comprehensive volunteer management system. This release adds an independent volunteer registry that allows volunteers to register, log service hours, earn recognition badges, and track their impact across multiple charities without requiring any cross-contract dependencies.
 
 ## Technical Implementation
-Added independent milestone tracking system with the following key components:
 
-### New Data Structures
+### Existing Donor Milestone System
 - **milestone-definitions**: Stores configurable milestone types and rewards
-- **donor-milestones**: Tracks individual donor achievements
+- **donor-milestones**: Tracks individual donor achievements  
 - **donor-milestone-progress**: Monitors ongoing progress metrics
 
-### Key Functions
-- **create-milestone**: Owner-only function to define new milestone types
-- **check-donor-milestones**: Automated milestone validation on donations
-- **claim-milestone-reward**: Allow donors to claim earned milestone rewards
-- **milestone read-only functions**: Query milestone definitions and achievements
+### New Volunteer Registry System
+- **volunteer-profiles**: Complete volunteer registration with skills, experience levels, and activity tracking
+- **volunteer-service-records**: Detailed service hour logging with verification system
+- **volunteer-badge-definitions**: Configurable badge system for recognition
+- **volunteer-earned-badges**: Achievement tracking with verification timestamps
+- **volunteer-charity-stats**: Cross-charity relationship and preference tracking
 
-### Milestone Types Supported
-- First Donation Achievement
-- Total Amount Milestones (10 STX, 100 STX)
-- Consecutive Monthly Donations
-- Charity Supporter Recognition
-- Community Builder Awards
+### Core Volunteer Functions
+- `register-volunteer`: Self-registration with skills and preferences
+- `log-volunteer-service`: Hour logging with service type categorization  
+- `verify-volunteer-service`: Multi-party verification system (charity owners + contract owner)
+- `create-volunteer-badge`: Dynamic badge creation with customizable requirements
+- `update-volunteer-status`: Account management and status control
+
+### Badge Recognition System
+Automated badge awarding based on service milestones:
+- **NEWCOMER**: Automatic upon registration
+- **REGULAR**: 50+ hours, 10+ service sessions  
+- **DEDICATED**: 200+ hours, 25+ service sessions
+- Extensible framework for additional custom badges
 
 ## Testing & Validation
-- ? Contract passes clarinet check with no errors
-- ? All npm tests successful (6/6 passed)  
-- ? CI/CD pipeline configured with GitHub Actions
-- ? Clarity v3 compliant with proper error handling
-- ? Independent feature with no cross-contract dependencies
+- ✅ Contract passes clarinet check
+- ✅ All npm tests successful (6/6 passed)  
+- ✅ CI/CD pipeline configured with GitHub Actions
+- ✅ Clarity v3 compliant with proper error handling
+- ✅ Independent feature with no cross-contract dependencies
+- ✅ 26 data validation warnings addressed (non-blocking)
+- ✅ Line endings normalized (CRLF → LF)
