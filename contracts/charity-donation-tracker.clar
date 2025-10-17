@@ -516,3 +516,439 @@
         (ok true)
     )
 )
+
+;; === VOLUNTEER REGISTRY SYSTEM ===
+;; Independent feature for managing volunteer registrations, service tracking, and badge recognition
+
+;; Volunteer System Constants
+(define-constant ERR_VOLUNTEER_NOT_FOUND (err u420))
+(define-constant ERR_VOLUNTEER_ALREADY_EXISTS (err u421))
+(define-constant ERR_INVALID_HOURS (err u422))
+(define-constant ERR_BADGE_NOT_FOUND (err u423))
+(define-constant ERR_BADGE_ALREADY_EARNED (err u424))
+(define-constant ERR_INSUFFICIENT_HOURS (err u425))
+(define-constant ERR_INVALID_SKILL_LEVEL (err u426))
+
+;; Volunteer Badge Types
+(define-constant BADGE_NEWCOMER "NEWCOMER")
+(define-constant BADGE_REGULAR "REGULAR")
+(define-constant BADGE_DEDICATED "DEDICATED")
+(define-constant BADGE_CHAMPION "CHAMPION")
+(define-constant BADGE_SPECIALIST "SPECIALIST")
+(define-constant BADGE_LEADER "LEADER")
+
+;; Volunteer Data Variables
+(define-data-var next-volunteer-id uint u1)
+(define-data-var next-service-entry-id uint u1)
+(define-data-var next-badge-id uint u1)
+(define-data-var total-volunteer-hours uint u0)
+(define-data-var total-active-volunteers uint u0)
+
+;; Volunteer Profiles Map
+(define-map volunteer-profiles
+    { volunteer: principal }
+    {
+        volunteer-id: uint,
+        name: (string-ascii 64),
+        skills: (string-ascii 128),
+        experience-level: (string-ascii 16),
+        total-hours: uint,
+        total-sessions: uint,
+        registration-date: uint,
+        last-activity: uint,
+        is-active: bool,
+        preferred-causes: (string-ascii 256)
+    }
+)
+
+;; Volunteer Service Records Map
+(define-map volunteer-service-records
+    { service-id: uint }
+    {
+        volunteer: principal,
+        charity-id: uint,
+        service-date: uint,
+        hours-worked: uint,
+        service-type: (string-ascii 64),
+        description: (string-ascii 256),
+        verified: bool,
+        verified-by: (optional principal)
+    }
+)
+
+;; Volunteer Badge Definitions Map
+(define-map volunteer-badge-definitions
+    { badge-id: uint }
+    {
+        name: (string-ascii 64),
+        description: (string-ascii 256),
+        badge-type: (string-ascii 32),
+        hours-requirement: uint,
+        sessions-requirement: uint,
+        skill-requirement: (string-ascii 16),
+        reward-points: uint,
+        is-active: bool
+    }
+)
+
+;; Volunteer Earned Badges Map
+(define-map volunteer-earned-badges
+    { volunteer: principal, badge-id: uint }
+    {
+        earned-at: uint,
+        verified: bool,
+        hours-at-earning: uint,
+        sessions-at-earning: uint
+    }
+)
+
+;; Volunteer Charity Relationships Map
+(define-map volunteer-charity-stats
+    { volunteer: principal, charity-id: uint }
+    {
+        total-hours: uint,
+        total-sessions: uint,
+        first-service: uint,
+        last-service: uint,
+        favorite-service-type: (string-ascii 64)
+    }
+)
+
+;; Public Functions for Volunteer Registry System
+
+;; Register as a volunteer
+(define-public (register-volunteer 
+    (name (string-ascii 64))
+    (skills (string-ascii 128))
+    (experience-level (string-ascii 16))
+    (preferred-causes (string-ascii 256))
+)
+    (let ((volunteer-id (var-get next-volunteer-id)))
+        (asserts! (> (len name) u0) ERR_INVALID_AMOUNT)
+        (asserts! (is-none (map-get? volunteer-profiles { volunteer: tx-sender })) ERR_VOLUNTEER_ALREADY_EXISTS)
+        (asserts! (is-valid-experience-level experience-level) ERR_INVALID_SKILL_LEVEL)
+        
+        (map-set volunteer-profiles
+            { volunteer: tx-sender }
+            {
+                volunteer-id: volunteer-id,
+                name: name,
+                skills: skills,
+                experience-level: experience-level,
+                total-hours: u0,
+                total-sessions: u0,
+                registration-date: block-height,
+                last-activity: block-height,
+                is-active: true,
+                preferred-causes: preferred-causes
+            }
+        )
+        
+        (var-set next-volunteer-id (+ volunteer-id u1))
+        (var-set total-active-volunteers (+ (var-get total-active-volunteers) u1))
+        
+        ;; Award newcomer badge automatically
+        (unwrap-panic (award-automatic-badge tx-sender BADGE_NEWCOMER))
+        
+        (ok volunteer-id)
+    )
+)
+
+;; Log volunteer service hours
+(define-public (log-volunteer-service
+    (charity-id uint)
+    (hours-worked uint)
+    (service-type (string-ascii 64))
+    (description (string-ascii 256))
+)
+    (let (
+        (service-id (var-get next-service-entry-id))
+        (volunteer-profile (unwrap! (map-get? volunteer-profiles { volunteer: tx-sender }) ERR_VOLUNTEER_NOT_FOUND))
+        (charity-stats (default-to
+            { total-hours: u0, total-sessions: u0, first-service: u0, last-service: u0, favorite-service-type: "" }
+            (map-get? volunteer-charity-stats { volunteer: tx-sender, charity-id: charity-id })
+        ))
+    )
+        (asserts! (get is-active volunteer-profile) ERR_VOLUNTEER_NOT_FOUND)
+        (asserts! (> hours-worked u0) ERR_INVALID_HOURS)
+        (asserts! (<= hours-worked u24) ERR_INVALID_HOURS) ;; Max 24 hours per entry
+        
+        ;; Record the service entry
+        (map-set volunteer-service-records
+            { service-id: service-id }
+            {
+                volunteer: tx-sender,
+                charity-id: charity-id,
+                service-date: block-height,
+                hours-worked: hours-worked,
+                service-type: service-type,
+                description: description,
+                verified: false,
+                verified-by: none
+            }
+        )
+        
+        ;; Update volunteer profile
+        (map-set volunteer-profiles
+            { volunteer: tx-sender }
+            (merge volunteer-profile {
+                total-hours: (+ (get total-hours volunteer-profile) hours-worked),
+                total-sessions: (+ (get total-sessions volunteer-profile) u1),
+                last-activity: block-height
+            })
+        )
+        
+        ;; Update volunteer-charity relationship
+        (map-set volunteer-charity-stats
+            { volunteer: tx-sender, charity-id: charity-id }
+            {
+                total-hours: (+ (get total-hours charity-stats) hours-worked),
+                total-sessions: (+ (get total-sessions charity-stats) u1),
+                first-service: (if (is-eq (get first-service charity-stats) u0) block-height (get first-service charity-stats)),
+                last-service: block-height,
+                favorite-service-type: service-type
+            }
+        )
+        
+        ;; Update global stats
+        (var-set next-service-entry-id (+ service-id u1))
+        (var-set total-volunteer-hours (+ (var-get total-volunteer-hours) hours-worked))
+        
+        ;; Check for badge achievements
+        (unwrap-panic (check-volunteer-badge-eligibility tx-sender))
+        
+        (ok service-id)
+    )
+)
+
+;; Verify volunteer service (charity owner or contract owner only)
+(define-public (verify-volunteer-service (service-id uint))
+    (let (
+        (service-record (unwrap! (map-get? volunteer-service-records { service-id: service-id }) ERR_INVALID_AMOUNT))
+        (charity-info (unwrap! (map-get? charities { charity-id: (get charity-id service-record) }) ERR_CHARITY_NOT_FOUND))
+    )
+        (asserts! (or 
+            (is-eq tx-sender CONTRACT_OWNER)
+            (is-eq tx-sender (get wallet charity-info))
+        ) ERR_NOT_AUTHORIZED)
+        (asserts! (not (get verified service-record)) ERR_ALREADY_EXISTS)
+        
+        (map-set volunteer-service-records
+            { service-id: service-id }
+            (merge service-record {
+                verified: true,
+                verified-by: (some tx-sender)
+            })
+        )
+        
+        (ok true)
+    )
+)
+
+;; Create a new volunteer badge (owner only)
+(define-public (create-volunteer-badge
+    (name (string-ascii 64))
+    (description (string-ascii 256))
+    (badge-type (string-ascii 32))
+    (hours-requirement uint)
+    (sessions-requirement uint)
+    (skill-requirement (string-ascii 16))
+    (reward-points uint)
+)
+    (let ((badge-id (var-get next-badge-id)))
+        (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_NOT_AUTHORIZED)
+        (asserts! (> (len name) u0) ERR_INVALID_AMOUNT)
+        (asserts! (is-valid-badge-type badge-type) ERR_INVALID_MILESTONE_TYPE)
+        
+        (map-set volunteer-badge-definitions
+            { badge-id: badge-id }
+            {
+                name: name,
+                description: description,
+                badge-type: badge-type,
+                hours-requirement: hours-requirement,
+                sessions-requirement: sessions-requirement,
+                skill-requirement: skill-requirement,
+                reward-points: reward-points,
+                is-active: true
+            }
+        )
+        
+        (var-set next-badge-id (+ badge-id u1))
+        (ok badge-id)
+    )
+)
+
+;; Update volunteer status (deactivate/reactivate)
+(define-public (update-volunteer-status (volunteer principal) (is-active bool))
+    (let ((volunteer-profile (unwrap! (map-get? volunteer-profiles { volunteer: volunteer }) ERR_VOLUNTEER_NOT_FOUND)))
+        (asserts! (or (is-eq tx-sender volunteer) (is-eq tx-sender CONTRACT_OWNER)) ERR_NOT_AUTHORIZED)
+        
+        (map-set volunteer-profiles
+            { volunteer: volunteer }
+            (merge volunteer-profile { is-active: is-active })
+        )
+        
+        ;; Update global active volunteer count
+        (if is-active
+            (if (not (get is-active volunteer-profile))
+                (var-set total-active-volunteers (+ (var-get total-active-volunteers) u1))
+                true
+            )
+            (if (get is-active volunteer-profile)
+                (var-set total-active-volunteers (- (var-get total-active-volunteers) u1))
+                true
+            )
+        )
+        
+        (ok true)
+    )
+)
+
+;; Read-only functions for Volunteer Registry System
+
+;; Get volunteer profile
+(define-read-only (get-volunteer-profile (volunteer principal))
+    (map-get? volunteer-profiles { volunteer: volunteer })
+)
+
+;; Get volunteer service record
+(define-read-only (get-volunteer-service-record (service-id uint))
+    (map-get? volunteer-service-records { service-id: service-id })
+)
+
+;; Get volunteer badge definition
+(define-read-only (get-volunteer-badge-definition (badge-id uint))
+    (map-get? volunteer-badge-definitions { badge-id: badge-id })
+)
+
+;; Get volunteer earned badge
+(define-read-only (get-volunteer-earned-badge (volunteer principal) (badge-id uint))
+    (map-get? volunteer-earned-badges { volunteer: volunteer, badge-id: badge-id })
+)
+
+;; Get volunteer charity statistics
+(define-read-only (get-volunteer-charity-stats (volunteer principal) (charity-id uint))
+    (map-get? volunteer-charity-stats { volunteer: volunteer, charity-id: charity-id })
+)
+
+;; Get volunteer system statistics
+(define-read-only (get-volunteer-system-stats)
+    {
+        total-volunteers: (- (var-get next-volunteer-id) u1),
+        total-active-volunteers: (var-get total-active-volunteers),
+        total-volunteer-hours: (var-get total-volunteer-hours),
+        total-service-entries: (- (var-get next-service-entry-id) u1),
+        total-badges: (- (var-get next-badge-id) u1)
+    }
+)
+
+;; Private functions for Volunteer Registry System
+
+;; Validate experience level
+(define-private (is-valid-experience-level (level (string-ascii 16)))
+    (or 
+        (is-eq level "BEGINNER")
+        (or
+            (is-eq level "INTERMEDIATE")
+            (or
+                (is-eq level "ADVANCED")
+                (is-eq level "EXPERT")
+            )
+        )
+    )
+)
+
+;; Validate badge type
+(define-private (is-valid-badge-type (badge-type (string-ascii 32)))
+    (or 
+        (is-eq badge-type BADGE_NEWCOMER)
+        (or
+            (is-eq badge-type BADGE_REGULAR)
+            (or
+                (is-eq badge-type BADGE_DEDICATED)
+                (or
+                    (is-eq badge-type BADGE_CHAMPION)
+                    (or
+                        (is-eq badge-type BADGE_SPECIALIST)
+                        (is-eq badge-type BADGE_LEADER)
+                    )
+                )
+            )
+        )
+    )
+)
+
+;; Award automatic badge
+(define-private (award-automatic-badge (volunteer principal) (badge-type (string-ascii 32)))
+    (let ((volunteer-profile (unwrap! (map-get? volunteer-profiles { volunteer: volunteer }) ERR_VOLUNTEER_NOT_FOUND)))
+        ;; Award newcomer badge (badge-id: u1 assumed to exist)
+        (if (and 
+                (is-eq badge-type BADGE_NEWCOMER)
+                (is-none (map-get? volunteer-earned-badges { volunteer: volunteer, badge-id: u1 }))
+            )
+            (begin
+                (map-set volunteer-earned-badges
+                    { volunteer: volunteer, badge-id: u1 }
+                    {
+                        earned-at: block-height,
+                        verified: true,
+                        hours-at-earning: (get total-hours volunteer-profile),
+                        sessions-at-earning: (get total-sessions volunteer-profile)
+                    }
+                )
+                (ok true)
+            )
+            (ok true)
+        )
+    )
+)
+
+;; Check volunteer badge eligibility
+(define-private (check-volunteer-badge-eligibility (volunteer principal))
+    (let (
+        (volunteer-profile (unwrap! (map-get? volunteer-profiles { volunteer: volunteer }) ERR_VOLUNTEER_NOT_FOUND))
+        (total-hours (get total-hours volunteer-profile))
+        (total-sessions (get total-sessions volunteer-profile))
+    )
+        (begin
+            ;; Check for Regular badge (50+ hours, 10+ sessions)
+            (if (and 
+                    (>= total-hours u50)
+                    (>= total-sessions u10)
+                    (is-none (map-get? volunteer-earned-badges { volunteer: volunteer, badge-id: u2 }))
+                )
+                (map-set volunteer-earned-badges
+                    { volunteer: volunteer, badge-id: u2 }
+                    {
+                        earned-at: block-height,
+                        verified: true,
+                        hours-at-earning: total-hours,
+                        sessions-at-earning: total-sessions
+                    }
+                )
+                false
+            )
+            
+            ;; Check for Dedicated badge (200+ hours, 25+ sessions)
+            (if (and 
+                    (>= total-hours u200)
+                    (>= total-sessions u25)
+                    (is-none (map-get? volunteer-earned-badges { volunteer: volunteer, badge-id: u3 }))
+                )
+                (map-set volunteer-earned-badges
+                    { volunteer: volunteer, badge-id: u3 }
+                    {
+                        earned-at: block-height,
+                        verified: true,
+                        hours-at-earning: total-hours,
+                        sessions-at-earning: total-sessions
+                    }
+                )
+                false
+            )
+            
+            (ok true)
+        )
+    )
+)
